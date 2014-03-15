@@ -12,6 +12,7 @@ if True:
 else:
     from PyQt4 import QtGui
     from PyQt4 import QtCore
+
     QtCore.Signal = QtCore.pyqtSignal
 
 TOTAL_WIDGETS = 10
@@ -57,20 +58,24 @@ class MainWindow(QtGui.QWidget):
         self._layout = QtGui.QVBoxLayout(self)
         self._add_button = QtGui.QPushButton('Start New Task')
         self._layout.addWidget(self._add_button)
-
         self._add_button.clicked.connect(self._start_new_task)
 
-    def on_finish(self, *args):
-        print 'finish', args
+    def on_finish(self, widget):
+        print 'finish', widget
+        widget.close()
+
+    def closeEvent(self, QCloseEvent):
+        print 'close event'
 
     def _start_new_task(self):
         task = Worker()
         progress_bar = QtGui.QProgressBar()
         progress_bar.setRange(0, TOTAL_WIDGETS)
         task.processed.connect(progress_bar.setValue)
-        task.finished.connect(self.on_finish)
+        task.finished.connect(lambda x = progress_bar: self.on_finish(x))
         self._layout.addWidget(progress_bar)
         self._thread_pool.start(task)
+        print self._thread_pool.activeThreadCount()
 
 
 if __name__ == '__main__':
