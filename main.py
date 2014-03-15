@@ -17,7 +17,7 @@ else:
 TOTAL_WIDGETS = 10
 
 
-class Worker(QtCore.QRunnable):
+class Worker(QtCore.QRunnable, QtCore.QObject):
     processed = QtCore.Signal(int)
     finished = QtCore.Signal()
 
@@ -60,11 +60,15 @@ class MainWindow(QtGui.QWidget):
 
         self._add_button.clicked.connect(self._start_new_task)
 
+    def on_finish(self, *args):
+        print 'finish', args
+
     def _start_new_task(self):
         task = Worker()
         progress_bar = QtGui.QProgressBar()
         progress_bar.setRange(0, TOTAL_WIDGETS)
         task.processed.connect(progress_bar.setValue)
+        task.finished.connect(self.on_finish)
         self._layout.addWidget(progress_bar)
         self._thread_pool.start(task)
 
